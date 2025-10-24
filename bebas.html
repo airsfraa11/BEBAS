@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Toko Sederhana — GitHub Pages</title>
+  <meta name="description" content="Contoh website toko sederhana untuk di-deploy di GitHub Pages" />
+  <!-- Jika ingin menambahkan favicon, letakkan file favicon.ico di root repo dan uncomment baris berikut:
+  <link rel="icon" href="/favicon.ico" />
+  -->
+  <style>
+    /* ---------- Reset & Typography ---------- */
+    :root{
+      --primary:#0b78d1;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --bg:#f4f6f8;
+      --radius:12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:var(--bg);
+      color:#111827;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.4;
+    }
+
+    /* ---------- Layout ---------- */
+    header{
+      background:linear-gradient(90deg,var(--primary),#0466b3);
+      color:white;
+      padding:18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    header .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    header h1{margin:0;font-size:1.05rem;letter-spacing:0.2px}
+    header p{margin:0;font-size:0.85rem;opacity:0.95}
+
+    .controls{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .search{
+      background:rgba(255,255,255,0.15);
+      border:1px solid rgba(255,255,255,0.12);
+      padding:6px 10px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .search input{
+      border:0;
+      outline:none;
+      background:transparent;
+      color:white;
+      width:180px;
+    }
+    .cart-btn{
+      background:white;
+      color:var(--primary);
+      padding:6px 12px;
+      border-radius:999px;
+      font-weight:600;
+      cursor:pointer;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      border:0;
+    }
+
+    main{padding:20px;max-width:1100px;margin:18px auto;display:grid;grid-template-columns:1fr 320px;gap:18px}
+    /* Left: product grid */
+    .catalog{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:14px;
+    }
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:12px;
+      box-shadow:0 6px 18px rgba(11,20,40,0.06);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      transition:transform .14s ease, box-shadow .14s ease;
+    }
+    .card:hover{transform:translateY(-6px); box-shadow:0 14px 30px rgba(11,20,40,0.08)}
+    .card img{width:100%;height:150px;object-fit:cover;border-radius:8px}
+    .card h3{margin:0;font-size:1rem}
+    .price{color:var(--primary);font-weight:700}
+    .card .actions{margin-top:auto;display:flex;gap:8px}
+    .btn{border:0;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .btn-primary{background:var(--primary);color:white;font-weight:600}
+    .btn-outline{background:transparent;border:1px solid #e6e9ee;color:var(--muted)}
+
+    /* Right: sidebar keranjang */
+    .sidebar{
+      position:sticky;
+      top:20px;
+      align-self:start;
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:12px;
+      box-shadow:0 6px 18px rgba(11,20,40,0.06);
+      height:fit-content;
+    }
+    .sidebar h3{margin:0 0 8px 0}
+    .line{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #eef2f6}
+    .total{font-weight:800;margin-top:10px;text-align:right}
+    .checkout{margin-top:12px;display:flex;gap:8px;justify-content:space-between;align-items:center}
+    .checkout button{flex:1;padding:10px;border-radius:10px;border:0;cursor:pointer}
+    .checkout .pay{background:#10b981;color:white;font-weight:700}
+    .empty{color:var(--muted);text-align:center;padding:18px 10px}
+
+    /* small screens */
+    @media (max-width:880px){
+      main{grid-template-columns:1fr; padding:14px}
+      .search input{width:110px}
+      .checkout{flex-direction:column;gap:8px}
+    }
+
+    /* small helpers */
+    .badge{background:#f3f4f6;padding:4px 8px;border-radius:8px;font-weight:700}
+    .muted{color:var(--muted);font-size:0.9rem}
+    a.small{font-size:0.85rem;color:var(--muted);text-decoration:none}
+  </style>
+</head>
+<body>
+  <!--
+    Petunjuk singkat:
+    1) Simpan file ini sebagai index.html di repo GitHub.
+    2) Untuk GitHub Pages: 
+       - Opsi A: Buat repo bernama username.github.io, push file index.html ke branch main -> langsung tersedia di https://username.github.io
+       - Opsi B: Di repo apa saja, aktifkan Pages pada Settings -> Pages -> deploy dari branch main/(root) -> file index.html akan dilayani dari folder root.
+    3) Jika ingin domain custom, tambahkan file CNAME di root repo yang berisi domainmu.
+    4) Gambar menggunakan Picsum sehingga tidak perlu menyimpan asset.
+  -->
+
+  <header>
+    <div class="brand">
+      <!-- Logo sederhana (SVG inline supaya tidak perlu file terpisah) -->
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <rect x="1" y="1" width="22" height="22" rx="6" fill="white" />
+        <path d="M6 12h12M12 6v12" stroke="#0b78d1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <h1>Toko Sederhana</h1>
+        <p class="muted">Demo jualan — siap di-deploy ke GitHub Pages</p>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search" title="Cari produk">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M21 21l-4.35-4.35" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="11" cy="11" r="6" stroke="white" stroke-width="1.6"/>
+        </svg>
+        <input id="q" placeholder="Cari produk..." aria-label="Cari produk" />
+      </div>
+
+      <button class="cart-btn" id="openCartBtn" aria-expanded="false">
+        🛒 Keranjang <span id="count" style="min-width:24px;text-align:right;display:inline-block">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 style="margin:0">Produk</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge" id="productCount">0</span>
+          <a class="small" href="#" id="resetBtn">Reset demo</a>
+        </div>
+      </div>
+
+      <div class="catalog" id="catalog"></div>
+    </section>
+
+    <aside class="sidebar" id="sidebar">
+      <h3>Keranjang</h3>
+      <div id="cartList">
+        <div class="empty">Keranjang kosong</div>
+      </div>
+      <div class="total">Total: Rp <span id="total">0</span></div>
+
+      <div class="checkout">
+        <button class="btn btn-outline" id="clearCart">Kosongkan</button>
+        <button class="pay" id="checkoutBtn">Checkout</button>
+      </div>
+    </aside>
+  </main>
+
+  <footer style="text-align:center;padding:18px;color:var(--muted);font-size:0.9rem">
+    Dibuat untuk demo • Siap di-deploy ke GitHub Pages
+  </footer>
+
+  <script>
+    // ---------- Data produk (mudah diubah/ditambah) ----------
+    const products = [
+      { id:1, name:"Kemeja Pria", price:120000, img:"https://picsum.photos/seed/ka1/600/400" },
+      { id:2, name:"Celana Jeans", price:150000, img:"https://picsum.photos/seed/ka2/600/400" },
+      { id:3, name:"Sepatu Sneakers", price:250000, img:"https://picsum.photos/seed/ka3/600/400" },
+      { id:4, name:"Tas Ransel", price:180000, img:"https://picsum.photos/seed/ka4/600/400" },
+      { id:5, name:"Jaket Hoodie", price:200000, img:"https://picsum.photos/seed/ka5/600/400" },
+      { id:6, name:"Topi Baseball", price:80000, img:"https://picsum.photos/seed/ka6/600/400" },
+      { id:7, name:"Socks Pack", price:40000, img:"https://picsum.photos/seed/ka7/600/400" },
+      { id:8, name:"Kacamata", price:90000, img:"https://picsum.photos/seed/ka8/600/400" }
+    ];
+
+    // ---------- State ----------
+    let cart = [];
+
+    // ---------- Helpers ----------
+    const el = id => document.getElementById(id);
+    const formatRp = n => {
+      if (typeof n !== 'number') n = Number(n) || 0;
+      return n.toLocaleString('id-ID');
+    };
+
+    // ---------- Render produk ----------
+    function renderProducts(list){
+      const catalog = el('catalog');
+      catalog.innerHTML = '';
+      list.forEach(p => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${p.img}" alt="${escapeHtml(p.name)}" loading="lazy" />
+          <h3>${escapeHtml(p.name)}</h3>
+          <div class="muted">Rp <span class="price">${formatRp(p.price)}</span></div>
+          <div class="actions">
+            <button class="btn btn-outline" data-id="${p.id}" onclick="viewProduct(${p.id})">Lihat</button>
+            <button class="btn btn-primary" data-id="${p.id}" onclick="addToCart(${p.id})">Tambah</button>
+          </div>
+        `;
+        catalog.appendChild(card);
+      });
+      el('productCount').textContent = list.length;
+    }
+
+    // Safe escape (very small util)
+    function escapeHtml(str){
+      return String(str)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
+    }
+
+    // ---------- Cart logic ----------
+    function addToCart(id){
+      const prod = products.find(p => p.id === id);
+      if(!prod) return;
+      const found = cart.find(i => i.id === id);
+      if(found) found.qty++;
+      else cart.push({ ...prod, qty:1 });
+      saveCart();
+      renderCart();
+      flashCount();
+    }
+
+    function removeFromCart(id){
+      cart = cart.filter(i => i.id !== id);
+      saveCart();
+      renderCart();
+    }
+
+    function changeQty(id, delta){
+      const it = cart.find(i=>i.id===id);
+      if(!it) return;
+      it.qty += delta;
+      if(it.qty < 1) removeFromCart(id);
+      saveCart();
+      renderCart();
+    }
+
+    function clearCart(){
+      if(!confirm('Kosongkan keranjang?')) return;
+      cart = [];
+      saveCart();
+      renderCart();
+    }
+
+    function checkout(){
+      if(cart.length === 0){ alert('Keranjang kosong.'); return; }
+      // Simulasi checkout sederhana
+      const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+      const names = cart.map(i => `${i.name} x${i.qty}`).join('\\n');
+      alert(`Total bayar: Rp ${formatRp(total)}\\n\\nPesanan:\\n${names}\\n\\nDemo: tidak ada pembayaran nyata.`);
+      cart = [];
+      saveCart();
+      renderCart();
+    }
+
+    // ---------- Persistence (localStorage) ----------
+    const STORAGE_KEY = 'simple_shop_demo_v1';
+    function saveCart(){
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); } catch(e){}
+    }
+    function loadCart(){
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw) cart = JSON.parse(raw) || [];
+      } catch(e){ cart = []; }
+    }
+
+    // ---------- Render cart UI ----------
+    function renderCart(){
+      const list = el('cartList');
+      if(cart.length === 0){
+        list.innerHTML = '<div class="empty">Keranjang kosong</div>';
+        el('count').textContent = 0;
+        el('total').textContent = formatRp(0);
+        return;
+      }
+      list.innerHTML = '';
+      cart.forEach(it => {
+        const row = document.createElement('div');
+        row.className = 'line';
+        row.innerHTML = `
+          <div>
+            <div style="font-weight:700">${escapeHtml(it.name)}</div>
+            <div class="muted">Rp ${formatRp(it.price)} &times; ${it.qty}</div>
+          </div>
+          <div style="text-align:right;min-width:90px">
+            <div style="font-weight:700">Rp ${formatRp(it.price * it.qty)}</div>
+            <div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end">
+              <button class="btn btn-outline" onclick="changeQty(${it.id}, -1)">−</button>
+              <button class="btn btn-outline" onclick="changeQty(${it.id}, 1)">+</button>
+              <button class="btn btn-outline" onclick="removeFromCart(${it.id})">×</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+      const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
+      el('count').textContent = cart.reduce((s,i)=>s+i.qty,0);
+      el('total').textContent = formatRp(total);
+    }
+
+    // ---------- Small UI helpers ----------
+    function flashCount(){
+      const c = el('count');
+      c.animate([{transform:'scale(1.2)'},{transform:'scale(1)'}],{duration:240, easing:'ease-out'});
+    }
+
+    // ---------- Search / filter ----------
+    function doSearch(q){
+      q = String(q||'').trim().toLowerCase();
+      if(!q) renderProducts(products);
+      else {
+        const filtered = products.filter(p => p.name.toLowerCase().includes(q));
+        renderProducts(filtered);
+      }
+    }
+
+    // ---------- View product (modal simple) ----------
+    function viewProduct(id){
+      const p = products.find(x=>x.id===id);
+      if(!p) return;
+      const html = `
+        ${p.name}\\nHarga: Rp ${formatRp(p.price)}\\n\\nKlik OK untuk menambah ke keranjang (1).
+      `;
+      if(confirm(html)){
+        addToCart(id);
+      }
+    }
+
+    // ---------- Small utility to prevent XSS via attributes (already used escapeHtml above) ----------
+    // ---------- Init ----------
+    (function init(){
+      // load cart
+      loadCart();
+      renderProducts(products);
+      renderCart();
+
+      // events
+      el('q').addEventListener('input', e => doSearch(e.target.value));
+      el('checkoutBtn').addEventListener('click', checkout);
+      el('clearCart').addEventListener('click', clearCart);
+      el('resetBtn').addEventListener('click', e => {
+        e.preventDefault();
+        if(confirm('Reset demo? (mengosongkan keranjang dan menampilkan semua produk)')){
+          cart = []; saveCart(); renderCart(); renderProducts(products);
+        }
+      });
+
+      // open/close sidebar on small screens
+      el('openCartBtn').addEventListener('click', () => {
+        const aside = document.querySelector('.sidebar');
+        const expanded = el('openCartBtn').getAttribute('aria-expanded') === 'true';
+        el('openCartBtn').setAttribute('aria-expanded', String(!expanded));
+        if(window.innerWidth < 880){
+          aside.style.display = expanded ? '' : 'block';
+          aside.scrollIntoView({behavior:'smooth'});
+        } else {
+          // on desktop, just focus sidebar
+          aside.scrollIntoView({behavior:'smooth'});
+        }
+      });
+
+      // keyboard: Enter on search focuses catalog first match (accessibility nicety)
+      el('q').addEventListener('keydown', e => {
+        if(e.key === 'Enter'){
+          const first = document.querySelector('.catalog .card button.btn-primary');
+          if(first) first.focus();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
